@@ -68,7 +68,7 @@ function initDBConnection() {
         // Alternately you could point to a local database here instead of a
         // Bluemix service.
         // url will be in this format: https://username:password@xxxxxxxxx-bluemix.cloudant.com
-        dbCredentials.url = "https://6a6ed9d5-e2e6-4aa1-9246-1bcf254b8547-bluemix:cd421e0c975e4276f1adbd1c770ad01003c3ff62ef90c07680534fc4dc8beb7d@6a6ed9d5-e2e6-4aa1-9246-1bcf254b8547-bluemix.cloudant.com";
+        dbCredentials.url = "https://1a73cfbc-39f2-494c-83c9-91639b4c7ae9-bluemix:e2c277e358954adc3e957b58d56e1cda563cf81d2578766f3c801278f3509903@1a73cfbc-39f2-494c-83c9-91639b4c7ae9-bluemix.cloudant.com";
     }
 
     cloudant = require('cloudant')(dbCredentials.url);
