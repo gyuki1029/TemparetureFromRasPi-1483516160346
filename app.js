@@ -111,6 +111,15 @@ function createResponseData(id, name, value, attachments) {
     return responseData;
 }
 
+function createResponseTempData(id, fields) {
+
+    var responseData = {
+        id: id,
+        fields: fields
+    };
+    return responseData;
+}
+
 
 var saveDocument = function (id, name, value, response) {
 
@@ -433,6 +442,39 @@ app.get('/api/favorites', function (request, response) {
         }
     });
 
+});
+
+app.get('/api/tempareture', function (request, response) {
+
+    console.log("Get method invoked.. ")
+
+    db = cloudant.use(dbCredentials.dbName);
+    var docList = [];
+    var i = 0;
+
+    db.search(searchConf.designDocumentName, searchConf.indexName, { q: searchConf.query }, function (err, result) {
+
+        if (err) {
+            throw err;
+        }
+
+        console.log('Showing %d out of a total %d data by { query=' + searchConf.query + '}', result.rows.length, result.total_rows);
+
+        for (var i = 0; i < result.rows.length; i++) {
+            console.log('Document id: %s', result.rows[i].id);
+
+            var responseData = createResponseTempData(
+                result.rows[i].id,
+                result.rows[i].fields
+            );
+            docList.push(responseData);
+        }
+
+
+        response.write(JSON.stringify(docList));
+        console.log('ending response...');
+        response.end();
+    });
 });
 
 
