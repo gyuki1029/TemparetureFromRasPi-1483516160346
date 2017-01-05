@@ -5,7 +5,7 @@
         "search": {
             "designDocumentName": "index",
             "indexName": "IndexByTimestamp",
-            "query": "*:*"
+            "query": "sensor:macbook AND timestamp:[0 TO 20180101000000]"
         }
     }
 }
