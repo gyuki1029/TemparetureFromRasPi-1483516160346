@@ -1,6 +1,11 @@
 {
     "Cloudant": {
         "dbName": "tempareture",
-        "url": "https://1a73cfbc-39f2-494c-83c9-91639b4c7ae9-bluemix:e2c277e358954adc3e957b58d56e1cda563cf81d2578766f3c801278f3509903@1a73cfbc-39f2-494c-83c9-91639b4c7ae9-bluemix.cloudant.com"
+        "url": "https://1a73cfbc-39f2-494c-83c9-91639b4c7ae9-bluemix:e2c277e358954adc3e957b58d56e1cda563cf81d2578766f3c801278f3509903@1a73cfbc-39f2-494c-83c9-91639b4c7ae9-bluemix.cloudant.com",
+        "search": {
+            "designDocumentName": "index",
+            "indexName": "IndexByTimestamp",
+            "query": "*:*"
+        }
     }
 }

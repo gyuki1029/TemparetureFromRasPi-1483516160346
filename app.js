@@ -21,6 +21,7 @@ var fileToUpload;
 var config = require('config');
 var dbCredentials = new Object();
 dbCredentials.dbName = config.Cloudant.dbName;
+var searchConf = config.Cloudant.search;
 
 var bodyParser = require('body-parser');
 var methodOverride = require('method-override');
@@ -75,7 +76,7 @@ function initDBConnection() {
     cloudant = require('cloudant')(dbCredentials.url);
 
     // check if DB exists if not create
-    cloudant.db.create(dbCredentials.dbName, function(err, res) {
+    cloudant.db.create(dbCredentials.dbName, function (err, res) {
         if (err) {
             console.log('Could not create new db: ' + dbCredentials.dbName + ', it might already exist.');
         }
@@ -98,7 +99,7 @@ function createResponseData(id, name, value, attachments) {
     };
 
 
-    attachments.forEach(function(item, index) {
+    attachments.forEach(function (item, index) {
         var attachmentData = {
             content_type: item.type,
             key: item.key,
@@ -111,7 +112,7 @@ function createResponseData(id, name, value, attachments) {
 }
 
 
-var saveDocument = function(id, name, value, response) {
+var saveDocument = function (id, name, value, response) {
 
     if (id === undefined) {
         // Generated random id
@@ -121,7 +122,7 @@ var saveDocument = function(id, name, value, response) {
     db.insert({
         name: name,
         value: value
-    }, id, function(err, doc) {
+    }, id, function (err, doc) {
         if (err) {
             console.log(err);
             response.sendStatus(500);
@@ -132,11 +133,11 @@ var saveDocument = function(id, name, value, response) {
 
 }
 
-app.get('/api/favorites/attach', function(request, response) {
+app.get('/api/favorites/attach', function (request, response) {
     var doc = request.query.id;
     var key = request.query.key;
 
-    db.attachment.get(doc, key, function(err, body) {
+    db.attachment.get(doc, key, function (err, body) {
         if (err) {
             response.status(500);
             response.setHeader('Content-Type', 'text/plain');
@@ -153,14 +154,14 @@ app.get('/api/favorites/attach', function(request, response) {
     });
 });
 
-app.post('/api/favorites/attach', multipartMiddleware, function(request, response) {
+app.post('/api/favorites/attach', multipartMiddleware, function (request, response) {
 
     console.log("Upload File Invoked..");
     console.log('Request: ' + JSON.stringify(request.headers));
 
     var id;
 
-    db.get(request.query.id, function(err, existingdoc) {
+    db.get(request.query.id, function (err, existingdoc) {
 
         var isExistingDoc = false;
         if (!existingdoc) {
@@ -176,20 +177,20 @@ app.post('/api/favorites/attach', multipartMiddleware, function(request, respons
         var file = request.files.file;
         var newPath = './public/uploads/' + file.name;
 
-        var insertAttachment = function(file, id, rev, name, value, response) {
+        var insertAttachment = function (file, id, rev, name, value, response) {
 
-            fs.readFile(file.path, function(err, data) {
+            fs.readFile(file.path, function (err, data) {
                 if (!err) {
 
                     if (file) {
 
                         db.attachment.insert(id, file.name, data, file.type, {
                             rev: rev
-                        }, function(err, document) {
+                        }, function (err, document) {
                             if (!err) {
                                 console.log('Attachment saved successfully.. ');
 
-                                db.get(document.id, function(err, doc) {
+                                db.get(document.id, function (err, doc) {
                                     console.log('Attachements from server --> ' + JSON.stringify(doc._attachments));
 
                                     var attachements = [];
@@ -238,7 +239,7 @@ app.post('/api/favorites/attach', multipartMiddleware, function(request, respons
             db.insert({
                 name: name,
                 value: value
-            }, '', function(err, doc) {
+            }, '', function (err, doc) {
                 if (err) {
                     console.log(err);
                 } else {
@@ -261,7 +262,7 @@ app.post('/api/favorites/attach', multipartMiddleware, function(request, respons
 
 });
 
-app.post('/api/favorites', function(request, response) {
+app.post('/api/favorites', function (request, response) {
 
     console.log("Create Invoked..");
     console.log("Name: " + request.body.name);
@@ -275,7 +276,7 @@ app.post('/api/favorites', function(request, response) {
 
 });
 
-app.delete('/api/favorites', function(request, response) {
+app.delete('/api/favorites', function (request, response) {
 
     console.log("Delete Invoked..");
     var id = request.query.id;
@@ -286,9 +287,9 @@ app.delete('/api/favorites', function(request, response) {
 
     db.get(id, {
         revs_info: true
-    }, function(err, doc) {
+    }, function (err, doc) {
         if (!err) {
-            db.destroy(doc._id, doc._rev, function(err, res) {
+            db.destroy(doc._id, doc._rev, function (err, res) {
                 // Handle response
                 if (err) {
                     console.log(err);
@@ -302,7 +303,7 @@ app.delete('/api/favorites', function(request, response) {
 
 });
 
-app.put('/api/favorites', function(request, response) {
+app.put('/api/favorites', function (request, response) {
 
     console.log("Update Invoked..");
 
@@ -314,12 +315,12 @@ app.put('/api/favorites', function(request, response) {
 
     db.get(id, {
         revs_info: true
-    }, function(err, doc) {
+    }, function (err, doc) {
         if (!err) {
             console.log(doc);
             doc.name = name;
             doc.value = value;
-            db.insert(doc, doc.id, function(err, doc) {
+            db.insert(doc, doc.id, function (err, doc) {
                 if (err) {
                     console.log('Error inserting data\n' + err);
                     return 500;
@@ -330,14 +331,26 @@ app.put('/api/favorites', function(request, response) {
     });
 });
 
-app.get('/api/favorites', function(request, response) {
+app.get('/api/favorites', function (request, response) {
 
     console.log("Get method invoked.. ")
 
     db = cloudant.use(dbCredentials.dbName);
     var docList = [];
     var i = 0;
-    db.list(function(err, body) {
+
+    db.search(searchConf.designDocumentName, searchConf.indexName, { q: searchConf.query }, function (err, result) {
+        if (err) {
+            throw err;
+        }
+
+        console.log('Showing %d out of a total %d data by { query=' + searchConf.query + '}', result.rows.length, result.total_rows);
+        for (var i = 0; i < result.rows.length; i++) {
+            console.log('Document id: %s', result.rows[i].id);
+        }
+    });
+
+    db.list(function (err, body) {
         if (!err) {
             var len = body.rows.length;
             console.log('total # of docs -> ' + len);
@@ -349,7 +362,7 @@ app.get('/api/favorites', function(request, response) {
                 db.insert({
                     name: docName,
                     value: 'A sample Document'
-                }, '', function(err, doc) {
+                }, '', function (err, doc) {
                     if (err) {
                         console.log(err);
                     } else {
@@ -368,11 +381,11 @@ app.get('/api/favorites', function(request, response) {
                 });
             } else {
 
-                body.rows.forEach(function(document) {
+                body.rows.forEach(function (document) {
 
                     db.get(document.id, {
                         revs_info: true
-                    }, function(err, doc) {
+                    }, function (err, doc) {
                         if (!err) {
                             if (doc['_attachments']) {
 
@@ -423,6 +436,6 @@ app.get('/api/favorites', function(request, response) {
 });
 
 
-http.createServer(app).listen(app.get('port'), '0.0.0.0', function() {
+http.createServer(app).listen(app.get('port'), '0.0.0.0', function () {
     console.log('Express server listening on port ' + app.get('port'));
 });
